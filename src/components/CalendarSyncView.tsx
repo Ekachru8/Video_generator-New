@@ -43,11 +43,11 @@ export const CalendarSyncView: React.FC = () => {
   };
 
   const handleExportICS = () => {
-    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Everygen Studio//Content Calendar//EN\n";
+    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//NovaGen Studio//Content Calendar//EN\n";
     calendarEvents.forEach(evt => {
       const cleanDate = evt.date.replace(/-/g, '');
       const cleanTime = evt.time.replace(/:/g, '') + '00';
-      icsContent += `BEGIN:VEVENT\nSUMMARY:${evt.title} (${evt.platform})\nDTSTART:${cleanDate}T${cleanTime}Z\nDESCRIPTION:Everygen Studio Scheduled Release for ${evt.format}\nSTATUS:CONFIRMED\nEND:VEVENT\n`;
+      icsContent += `BEGIN:VEVENT\nSUMMARY:${evt.title} (${evt.platform})\nDTSTART:${cleanDate}T${cleanTime}Z\nDESCRIPTION:NovaGen Studio Scheduled Release for ${evt.format}\nSTATUS:CONFIRMED\nEND:VEVENT\n`;
     });
     icsContent += "END:VCALENDAR";
 
@@ -55,7 +55,7 @@ export const CalendarSyncView: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `everygen_publishing_schedule.ics`;
+    a.download = `novagen_publishing_schedule.ics`;
     a.click();
   };
 
@@ -73,7 +73,7 @@ export const CalendarSyncView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -108,7 +108,7 @@ export const CalendarSyncView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Timeline cards */}
         <div className="lg:col-span-2 space-y-3">
-          <div className="p-4 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+          <div className="p-4 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <CalendarIcon className="w-4 h-4 text-blue-600" />
               <span>Upcoming Scheduled Drops ({calendarEvents.length})</span>
@@ -156,7 +156,7 @@ export const CalendarSyncView: React.FC = () => {
 
         {/* Right Col: Sync Info & Best Posting Windows */}
         <div className="space-y-4">
-          <div className="p-4 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4 text-xs">
+          <div className="p-4 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4 text-xs">
             <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
               Optimal Publishing Windows
             </h3>
@@ -184,7 +184,7 @@ export const CalendarSyncView: React.FC = () => {
       {/* Schedule Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in select-none">
-          <div className="bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
               Schedule Video Drop
             </h3>

@@ -38,8 +38,14 @@ export const SearchCommandModal: React.FC = () => {
   const filteredProjects = projects.filter(p => p.title.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60 backdrop-blur-sm p-4 animate-in fade-in select-none">
-      <div className="bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col">
+    <div 
+      onClick={() => setIsSearchModalOpen(false)}
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60 backdrop-blur-sm p-4 animate-in fade-in cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col cursor-default"
+      >
         {/* Search Input */}
         <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3">
           <Search className="w-5 h-5 text-neutral-400" />
@@ -53,7 +59,8 @@ export const SearchCommandModal: React.FC = () => {
           />
           <button
             onClick={() => setIsSearchModalOpen(false)}
-            className="p-1 rounded-md text-neutral-400 hover:text-neutral-700"
+            className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+            aria-label="Close search"
           >
             <X className="w-4 h-4" />
           </button>
@@ -112,11 +119,13 @@ export const SearchCommandModal: React.FC = () => {
                     }}
                     className="w-full text-left p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between text-neutral-800 dark:text-neutral-200"
                   >
-                    <div>
-                      <div className="font-semibold">{f.name}</div>
+                    <div className="min-w-0 flex-1 mr-3">
+                      <div className="font-semibold text-xs truncate">{f.name}</div>
                       <div className="text-[10px] text-neutral-400 truncate">{f.description}</div>
                     </div>
-                    <span className="text-[10px] text-blue-600 font-mono">Use format</span>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium whitespace-nowrap shrink-0 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900">
+                      Use format →
+                    </span>
                   </button>
                 ))}
               </div>

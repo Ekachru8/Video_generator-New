@@ -1,5 +1,6 @@
 export type NavTab = 
-  | 'home' 
+  | 'landing'
+  | 'home'
   | 'shorts-studio' 
   | 'video-generator' 
   | 'image-generator' 
@@ -24,6 +25,9 @@ export interface VideoFormat {
   coverGradient: string;
   iconName: string;
   promptExample: string;
+  videoUrl?: string;
+  imageUrl?: string;
+  previewDuration?: string;
 }
 
 export interface AIModel {
@@ -31,7 +35,7 @@ export interface AIModel {
   name: string;
   provider: string;
   category: 'video' | 'image' | 'audio';
-  tag?: 'Default' | 'New' | 'Popular' | 'Pro' | 'Fast';
+  tag?: 'Default' | 'New' | 'Popular' | 'Pro' | 'Fast' | string;
   description: string;
   maxResolution: string;
   creditsPerUnit: number;
@@ -50,7 +54,9 @@ export interface VideoTemplate {
   accentColor: string;
   soundEnabled?: boolean;
   modelRecommended: string;
-  visualTheme: 'disney' | 'anime' | 'cctv' | 'ring' | 'iphone' | 'hydraulic' | 'gta' | 'court' | 'zachd' | 'nursery' | 'car' | 'ranking';
+  visualTheme: 'disney' | 'anime' | 'cctv' | 'ring' | 'iphone' | 'hydraulic' | 'gta' | 'court' | 'zachd' | 'nursery' | 'car' | 'ranking' | 'nature' | 'ocean' | 'bodycam' | string;
+  videoUrl?: string;
+  imageUrl?: string;
 }
 
 export interface ProjectAsset {
@@ -69,6 +75,8 @@ export interface ProjectAsset {
   tags: string[];
   thumbnailColor: string;
   visualTheme?: string;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 export interface UserProfile {

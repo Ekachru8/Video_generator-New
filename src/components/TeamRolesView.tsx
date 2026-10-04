@@ -43,7 +43,7 @@ export const TeamRolesView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
           Roles, Permissions & Two-Factor Auth (2FA)
@@ -55,7 +55,7 @@ export const TeamRolesView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Two-Factor Authentication Box */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
@@ -93,7 +93,7 @@ export const TeamRolesView: React.FC = () => {
                       <div className="w-4 h-4 bg-white rounded-xs" />
                       <div className="w-4 h-4 bg-white rounded-xs" />
                     </div>
-                    <div className="text-[7px] text-center font-mono text-white">EVERYGEN</div>
+                    <div className="text-[7px] text-center font-mono text-white">NOVAGEN</div>
                     <div className="flex justify-between">
                       <div className="w-4 h-4 bg-white rounded-xs" />
                       <div className="w-2 h-2 bg-white rounded-xs" />
@@ -141,7 +141,7 @@ export const TeamRolesView: React.FC = () => {
         </div>
 
         {/* Current User Role Switcher */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
               <UserCheck className="w-5 h-5" />
@@ -184,7 +184,7 @@ export const TeamRolesView: React.FC = () => {
       </div>
 
       {/* Role Permission Matrix Table */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
         <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
           Granular Permission Matrix
         </h3>

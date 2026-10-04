@@ -6,20 +6,20 @@ export const SupercomputerView: React.FC = () => {
   const { activeTab } = useApp();
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
-          {activeTab === 'mcp' ? 'Model Context Protocol (MCP) Node' : 'Everygen Supercomputer GPU Cluster'}
+          {activeTab === 'mcp' ? 'Model Context Protocol (MCP) Node' : 'NovaGen Supercomputer GPU Cluster'}
         </h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
           {activeTab === 'mcp'
-            ? 'Connect Claude, Cursor, and custom autonomous agents directly to Everygen video pipelines.'
+            ? 'Connect Claude, Cursor, and custom autonomous agents directly to NovaGen video pipelines.'
             : 'Distributed H100 SXM5 render mesh running low-latency video synthesis and real-time audio diffusion.'}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-neutral-400">
             <span>Cluster Status</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -32,7 +32,7 @@ export const SupercomputerView: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-neutral-400">
             <span>Median Synthesis Latency</span>
             <Activity className="w-3.5 h-3.5 text-blue-500" />
@@ -45,7 +45,7 @@ export const SupercomputerView: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-neutral-400">
             <span>GPU Temperature</span>
             <Zap className="w-3.5 h-3.5 text-amber-500" />
@@ -65,7 +65,7 @@ export const SupercomputerView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-emerald-400" />
             <h3 className="text-xs font-mono font-bold text-neutral-200">
-              {activeTab === 'mcp' ? 'mcp.everygen.json configuration' : 'cluster_telemetry.log'}
+              {activeTab === 'mcp' ? 'mcp.novagen.json configuration' : 'cluster_telemetry.log'}
             </h3>
           </div>
           <span className="text-[10px] font-mono text-emerald-400">SSH2 ENCRYPTED</span>
@@ -74,11 +74,11 @@ export const SupercomputerView: React.FC = () => {
         <pre className="p-4 rounded-2xl bg-neutral-950 font-mono text-xs leading-relaxed text-emerald-400/90 overflow-x-auto border border-neutral-800">
 {activeTab === 'mcp' ? `{
   "mcpServers": {
-    "everygen-video": {
+    "novagen-video": {
       "command": "npx",
-      "args": ["-y", "@everygen/mcp-server"],
+      "args": ["-y", "@novagen/mcp-server"],
       "env": {
-        "EVERYGEN_API_KEY": "evg_live_9f82••••••••••••••4a91"
+        "NOVAGEN_API_KEY": "nvg_live_9f82••••••••••••••4a91"
       }
     }
   }

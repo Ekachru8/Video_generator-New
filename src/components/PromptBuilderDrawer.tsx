@@ -25,27 +25,55 @@ export const PromptBuilderDrawer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'm1',
-      sender: 'user',
-      text: 'Write a complete, ready-to-generate prompt for my current model and settings.',
-      timestamp: '11:51 AM'
-    },
-    {
-      id: 'm2',
-      sender: 'assistant',
-      text: `Here is a master-tier prompt tailored for **${selectedModel.name}** in the **${selectedFormat.name}** format (${duration}, ${resolution}):
+  const [messages, setMessages] = useState<Message[]>([]);
 
-"Cinematic 10-second sequence: dynamic camera push-in following an expressive character with high-contrast volumetric rim lighting, natural motion blur, shallow depth of field, 24fps filmic realism, 4K render quality."
+  // Handle Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsPromptBuilderOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setIsPromptBuilderOpen]);
 
-**Why this works:**
-• Strong visual hook in the first 1.5 seconds.
-• Grounded physical movement prevents model warping.
-• Lighting direction elevates texture detail.`,
-      timestamp: '11:51 AM'
+  // Dynamically initialize drawer when opened
+  React.useEffect(() => {
+    if (isPromptBuilderOpen && messages.length === 0) {
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (currentPrompt && currentPrompt.trim()) {
+        setMessages([
+          {
+            id: 'm1',
+            sender: 'user',
+            text: `Optimize my concept: "${currentPrompt}"`,
+            timestamp: now
+          },
+          {
+            id: 'm2',
+            sender: 'assistant',
+            text: `I've loaded your concept: **"${currentPrompt}"**.
+
+How would you like me to refine it for **${selectedModel.name}** in **${selectedFormat.name}** format?
+Tap any quick suggestion above or describe what to add (e.g., camera movements, lighting, slow motion, or negative prompts)!`,
+            timestamp: now
+          }
+        ]);
+      } else {
+        setMessages([
+          {
+            id: 'm1',
+            sender: 'assistant',
+            text: `Welcome to NovaGen Prompt Co-Pilot!
+
+What video would you like to create? Type any subject or action (e.g. *"A high-speed cybernetic drift car in Tokyo rain"* or *"A golden eagle diving through mountain clouds"*), and I will generate an optimized, viral master prompt for **${selectedModel.name}**!`,
+            timestamp: now
+          }
+        ]);
+      }
     }
-  ]);
+  }, [isPromptBuilderOpen, currentPrompt, selectedModel.name, selectedFormat.name]);
 
   if (!isPromptBuilderOpen) return null;
 
@@ -89,12 +117,13 @@ export const PromptBuilderDrawer: React.FC = () => {
 
       setMessages(prev => [...prev, botMsg]);
     } catch {
+      const fallbackSubject = currentPrompt || textToSend;
       const fallbackMsg: Message = {
         id: 'b_' + Date.now(),
         sender: 'assistant',
-        text: `Here is an enhanced prompt recommendation for ${selectedModel.name}:
+        text: `Here is an enhanced prompt recommendation for **${selectedModel.name}**:
 
-"A cinematic sequence featuring dynamic camera orbit around the main subject with natural lens flare, sharp reflections, high shutter speed, cinematic lighting."`,
+"${fallbackSubject}, dynamic low-angle camera push-in, cinematic volumetric lighting, 24fps filmic realism, 4K render quality, style of ${selectedFormat.name}."`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, fallbackMsg]);
@@ -109,44 +138,66 @@ export const PromptBuilderDrawer: React.FC = () => {
     const finalPrompt = match ? match[1] : text;
     setCurrentPrompt(finalPrompt);
     setCopiedId('applied');
-    setTimeout(() => setCopiedId(null), 1500);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[450px] bg-white dark:bg-[#14151e] border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col select-none animate-in slide-in-from-right duration-200">
-      {/* Header (Screenshot 6 replica) */}
-      <div className="h-14 px-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-blue-600" />
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-            Prompt Builder
-          </h3>
+    <>
+      {/* Backdrop overlay */}
+      <div 
+        onClick={() => setIsPromptBuilderOpen(false)}
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200 cursor-pointer"
+        aria-hidden="true"
+      />
+
+      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[450px] bg-white dark:bg-[#080a12] border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+        {/* Header (Screenshot 6 replica) */}
+        <div className="h-14 px-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+              Prompt Builder
+            </h3>
+          </div>
+          <button
+            onClick={() => setIsPromptBuilderOpen(false)}
+            className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+            aria-label="Close modal"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-        <button
-          onClick={() => setIsPromptBuilderOpen(false)}
-          className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+
+      {/* Active Studio Prompt Context Banner */}
+      {currentPrompt && currentPrompt.trim() && (
+        <div className="px-4 py-2 bg-blue-50/70 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-200 flex items-center justify-between">
+          <div className="truncate pr-2">
+            <span className="font-semibold text-blue-600 dark:text-blue-400 mr-1">Concept:</span>
+            <span className="italic truncate opacity-90">"{currentPrompt}"</span>
+          </div>
+          <span className="text-[10px] font-mono shrink-0 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-medium">
+            {selectedModel.name}
+          </span>
+        </div>
+      )}
 
       {/* Quick Prompts Shelf */}
       <div className="p-3 bg-neutral-50 dark:bg-[#181924] border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-1.5 overflow-x-auto text-[11px] scrollbar-none">
         <button
-          onClick={() => handleSend('Add camera movement & lighting directions')}
-          className="px-2.5 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-blue-500 whitespace-nowrap"
+          onClick={() => handleSend(currentPrompt ? `Add dynamic camera movement and cinematic lighting to my concept: "${currentPrompt}"` : 'Add dynamic camera movement & cinematic lighting')}
+          className="px-2.5 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-blue-500 whitespace-nowrap cursor-pointer transition-colors"
         >
           + Camera & Lighting
         </button>
         <button
-          onClick={() => handleSend('Make it more viral with a sudden unexpected twist')}
-          className="px-2.5 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-blue-500 whitespace-nowrap"
+          onClick={() => handleSend(currentPrompt ? `Add a high-retention viral twist to my concept: "${currentPrompt}"` : 'Add a high-retention viral twist')}
+          className="px-2.5 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-blue-500 whitespace-nowrap cursor-pointer transition-colors"
         >
           + Viral Twist
         </button>
         <button
-          onClick={() => handleSend('Suggest negative prompts to avoid deformities')}
-          className="px-2.5 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-blue-500 whitespace-nowrap"
+          onClick={() => handleSend(currentPrompt ? `Suggest negative prompts to prevent artifacts for my concept: "${currentPrompt}"` : 'Suggest negative prompts')}
+          className="px-2.5 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-blue-500 whitespace-nowrap cursor-pointer transition-colors"
         >
           + Negative Prompts
         </button>
@@ -202,7 +253,7 @@ export const PromptBuilderDrawer: React.FC = () => {
       </div>
 
       {/* Input Box (Screenshot 6 replica) */}
-      <div className="p-3 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-[#14151e]">
+      <div className="p-3 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-[#080a12]">
         <div className="relative flex items-center rounded-2xl bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/70 p-1.5 focus-within:border-blue-500 transition-colors">
           <input
             type="text"
@@ -226,5 +277,6 @@ export const PromptBuilderDrawer: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };

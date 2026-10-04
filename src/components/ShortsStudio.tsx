@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Sparkles,
   Plus,
@@ -19,11 +19,16 @@ import {
 import { useApp } from '../context/AppContext';
 import { VIDEO_TEMPLATES, VIDEO_FORMATS } from '../data/mockData';
 import { VideoVisualPlayer } from './VideoVisualPlayer';
+import { Floating3DDeck } from './Floating3DDeck';
+import { Card3D } from './Card3D';
 
 export const ShortsStudio: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const {
     currentPrompt,
     setCurrentPrompt,
+    selectedTemplate,
+    setSelectedTemplate,
     selectedFormat,
     setSelectedFormat,
     selectedModel,
@@ -66,10 +71,32 @@ export const ShortsStudio: React.FC = () => {
     : VIDEO_TEMPLATES.filter(t => t.category.toLowerCase().includes(activeTemplateFilter.toLowerCase()) || t.format.toLowerCase().includes(activeTemplateFilter.toLowerCase()));
 
   const handleApplyTemplate = (tpl: typeof VIDEO_TEMPLATES[0]) => {
-    setCurrentPrompt(tpl.prompt);
+    setSelectedTemplate(tpl);
+    const isCustom = currentPrompt.trim().length > 0 && 
+                     (!selectedTemplate || currentPrompt !== selectedTemplate.prompt) &&
+                     (!selectedFormat || currentPrompt !== selectedFormat.promptExample);
+    if (!isCustom) {
+      setCurrentPrompt(tpl.prompt);
+    }
     const fmt = VIDEO_FORMATS.find(f => f.name.toLowerCase().includes(tpl.format.toLowerCase())) || VIDEO_FORMATS[1];
     setSelectedFormat(fmt);
-    window.scrollTo({ top: 120, behavior: 'smooth' });
+    containerRef.current?.scrollTo({ top: 120, behavior: 'smooth' });
+  };
+
+  const handleApplyDeckCard = (formatName: string, prompt: string) => {
+    const matchingTpl = VIDEO_TEMPLATES.find(t => t.format.toLowerCase().includes(formatName.toLowerCase()) || t.title.toLowerCase().includes(formatName.toLowerCase()));
+    if (matchingTpl) {
+      setSelectedTemplate(matchingTpl);
+    }
+    const isCustom = currentPrompt.trim().length > 0 && 
+                     (!selectedTemplate || currentPrompt !== selectedTemplate.prompt) &&
+                     (!selectedFormat || currentPrompt !== selectedFormat.promptExample);
+    if (!isCustom) {
+      setCurrentPrompt(prompt);
+    }
+    const fmt = VIDEO_FORMATS.find(f => f.name.toLowerCase().includes(formatName.toLowerCase())) || VIDEO_FORMATS[1];
+    setSelectedFormat(fmt);
+    containerRef.current?.scrollTo({ top: 120, behavior: 'smooth' });
   };
 
   const handleSimulateReferenceUpload = () => {
@@ -77,34 +104,18 @@ export const ShortsStudio: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 select-none">
-      {/* Top Fanned-out Format Stack & Social Badges (Screenshot 2 replica) */}
+    <div ref={containerRef} className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+      {/* Top 3D Fanned-out Format Stack & Social Badges */}
       <div className="flex flex-col items-center justify-center text-center space-y-3 pt-2">
-        {/* Fanned-out Cards representation */}
-        <div className="relative h-28 w-72 flex items-center justify-center">
-          <div className="absolute w-16 h-24 rounded-xl bg-amber-950 border border-amber-800 shadow-md rotate-[-22deg] -translate-x-20 flex flex-col justify-end p-1 text-[8px] font-bold text-amber-200">
-            <span>AI court</span>
-          </div>
-          <div className="absolute w-16 h-24 rounded-xl bg-sky-900 border border-sky-700 shadow-md rotate-[-11deg] -translate-x-10 flex flex-col justify-end p-1 text-[8px] font-bold text-sky-200">
-            <span>Disney</span>
-          </div>
-          <div className="absolute w-18 h-26 rounded-xl bg-purple-900 border-2 border-purple-500 shadow-xl z-10 flex flex-col justify-end p-1.5 text-[9px] font-black text-white">
-            <span>GTA 6</span>
-          </div>
-          <div className="absolute w-16 h-24 rounded-xl bg-indigo-950 border border-indigo-700 shadow-md rotate-[11deg] translate-x-10 flex flex-col justify-end p-1 text-[8px] font-bold text-indigo-200">
-            <span>Anime</span>
-          </div>
-          <div className="absolute w-16 h-24 rounded-xl bg-stone-900 border border-stone-700 shadow-md rotate-[22deg] translate-x-20 flex flex-col justify-end p-1 text-[8px] font-bold text-stone-300">
-            <span>Press</span>
-          </div>
-        </div>
+        {/* Interactive 3D Fanned Deck */}
+        <Floating3DDeck onSelect={handleApplyDeckCard} />
 
         {/* Social Icons row */}
         <div className="flex items-center gap-3 text-neutral-400">
-          <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-bold">▶</span>
-          <span className="w-5 h-5 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-[10px] font-bold">♪</span>
-          <span className="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold">📷</span>
-          <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">f</span>
+          <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">▶</span>
+          <span className="w-5 h-5 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-[10px] font-bold shadow-xs">♪</span>
+          <span className="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">📷</span>
+          <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">f</span>
         </div>
 
         {/* Headline */}
@@ -113,8 +124,8 @@ export const ShortsStudio: React.FC = () => {
         </h2>
       </div>
 
-      {/* Main Studio Input Box (Screenshot 2 replica) */}
-      <div className="max-w-4xl mx-auto rounded-3xl bg-white dark:bg-[#14151d] border border-neutral-200 dark:border-neutral-800 shadow-lg p-4 transition-all">
+      {/* Main Studio Input Box with 3D Depth & Glare */}
+      <div className="max-w-4xl mx-auto rounded-3xl bg-white/95 dark:bg-[#080a12]/95 backdrop-blur-xl border border-neutral-200/90 dark:border-neutral-800/90 shadow-[0_12px_36px_-6px_rgba(0,117,253,0.12),0_2px_8px_rgba(0,0,0,0.04)] sheen-3d-border p-4 transition-all">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Left Textarea area */}
           <div className="flex-1 flex flex-col justify-between min-h-[160px]">
@@ -146,6 +157,27 @@ export const ShortsStudio: React.FC = () => {
               rows={4}
               className="w-full bg-transparent resize-none focus:outline-none text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 leading-relaxed font-sans"
             />
+
+            {selectedTemplate && (
+              <div className="mt-2 flex items-center justify-between p-2 px-3 rounded-xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border border-blue-500/20 text-xs">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
+                  <span className="font-semibold text-blue-600 dark:text-blue-400 truncate">
+                    Template: {selectedTemplate.title}
+                  </span>
+                  <span className="hidden sm:inline px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 shrink-0">
+                    {selectedTemplate.format}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setSelectedTemplate(null)}
+                  className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 text-xs font-semibold px-2 py-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800 shrink-0 ml-2"
+                  title="Clear selected template"
+                >
+                  Clear ✕
+                </button>
+              </div>
+            )}
 
             {referenceUploaded && (
               <div className="mt-2 flex items-center gap-2 p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 w-fit">
@@ -230,29 +262,58 @@ export const ShortsStudio: React.FC = () => {
           {/* Right Format Box & Generate CTA */}
           <div className="w-full md:w-56 flex flex-col justify-between gap-3">
             {/* Format Thumbnail / Select a format trigger */}
-            <div
+            <button
+              type="button"
               onClick={() => setIsFormatModalOpen(true)}
-              className="flex-1 min-h-[140px] rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-blue-500 dark:hover:border-blue-500 bg-neutral-50/60 dark:bg-neutral-900/50 hover:bg-blue-50/20 dark:hover:bg-blue-950/20 cursor-pointer flex flex-col items-center justify-center p-3 text-center transition-all group"
+              className="relative overflow-hidden flex-1 min-h-[140px] w-full rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:border-blue-500 dark:hover:border-blue-500 bg-neutral-50/60 dark:bg-neutral-900/50 cursor-pointer flex flex-col items-center justify-center p-0 text-center transition-all group focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <div className="w-10 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-xs border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-700 dark:text-neutral-200 group-hover:scale-110 group-hover:text-blue-600 transition-all mb-2">
-                <Plus className="w-5 h-5" />
-              </div>
-              <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-                {selectedFormat ? selectedFormat.name : 'Select a format'}
-              </div>
-              <span className="text-[11px] text-neutral-400 mt-0.5">
-                {selectedFormat ? selectedFormat.category : '13 viral formats'}
-              </span>
-            </div>
+              {selectedTemplate || (selectedFormat && selectedFormat.id !== 'no-format') ? (
+                <div className="relative w-full h-full min-h-[140px] flex items-center justify-center overflow-hidden rounded-2xl bg-black">
+                  <video
+                    src={selectedTemplate?.videoUrl || selectedFormat?.videoUrl || '/videos/nature-blooming.mp4'}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 pointer-events-none" />
+                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[9px] font-mono text-emerald-400 border border-emerald-500/30 flex items-center gap-1 z-10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>PREVIEW</span>
+                  </div>
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 text-left z-10">
+                    <div className="text-[11px] font-bold text-white truncate drop-shadow">
+                      {selectedTemplate?.title || selectedFormat?.name}
+                    </div>
+                    <div className="text-[9px] text-blue-300 font-semibold truncate drop-shadow">
+                      {selectedTemplate?.format || selectedFormat?.badge} • Click to change
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-3 text-center">
+                  <div className="w-10 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-xs border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-700 dark:text-neutral-200 group-hover:scale-110 group-hover:text-blue-600 transition-all mb-2">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                    Choose a format
+                  </div>
+                  <span className="text-[11px] text-neutral-400 mt-0.5">
+                    Freeform prompt (Custom)
+                  </span>
+                </div>
+              )}
+            </button>
 
             {/* Generate Button with credit badge */}
             <button
-              onClick={startVideoGeneration}
+              onClick={() => startVideoGeneration(referenceUploaded)}
               disabled={isGenerating}
-              className={`w-full py-3 rounded-2xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full py-3.5 rounded-2xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 isGenerating
                   ? 'bg-neutral-400 dark:bg-neutral-700 text-white cursor-not-allowed'
-                  : 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-black dark:hover:bg-white active:scale-98'
+                  : 'everygen-btn-primary text-white active:scale-98'
               }`}
             >
               {isGenerating ? (
@@ -262,8 +323,8 @@ export const ShortsStudio: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <span>Generate</span>
-                  <div className="flex items-center gap-0.5 opacity-80 font-mono text-[11px]">
+                  <span>Generate Video</span>
+                  <div className="flex items-center gap-0.5 opacity-90 font-mono text-[11px]">
                     <Zap className="w-3 h-3 fill-current" />
                     <span>{selectedModel.creditsPerUnit || 21}</span>
                   </div>
@@ -302,22 +363,37 @@ export const ShortsStudio: React.FC = () => {
           ))}
         </div>
 
-        {/* Templates Grid with Vertical Players */}
+        {/* Templates Grid with 3D Tilt Players */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pt-2">
           {filteredTemplates.map(tpl => (
-            <div
+            <Card3D
               key={tpl.id}
-              className="space-y-2 group"
+              maxTilt={6}
+              scale={1.02}
+              className="space-y-2 group p-2 rounded-2xl bg-white/90 dark:bg-[#060810]/90 backdrop-blur-md border border-neutral-200/90 dark:border-neutral-800 hover:border-blue-500/60 dark:hover:border-blue-500/60 shadow-xs hover:shadow-xl transition-all"
             >
               <VideoVisualPlayer
                 theme={tpl.visualTheme}
                 title={tpl.title}
+                prompt={tpl.prompt}
                 duration={tpl.duration}
+                imageUrl={tpl.imageUrl}
+                videoUrl={tpl.videoUrl}
                 aspectRatio="9:16"
               />
 
-              <div className="space-y-1 px-1">
-                <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
+              <div className="space-y-1.5 px-1">
+                <div className="flex items-center justify-between">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40">
+                    {tpl.format}
+                  </span>
+                  <span className="text-[9px] font-mono text-emerald-500 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    HD VIDEO
+                  </span>
+                </div>
+
+                <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate" title={tpl.title}>
                   {tpl.title}
                 </div>
                 <div className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1">
@@ -330,13 +406,13 @@ export const ShortsStudio: React.FC = () => {
                   </span>
                   <button
                     onClick={() => handleApplyTemplate(tpl)}
-                    className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 text-[11px] font-semibold transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-[11px] font-bold transition-all cursor-pointer shadow-2xs"
                   >
                     Remix
                   </button>
                 </div>
               </div>
-            </div>
+            </Card3D>
           ))}
         </div>
       </div>

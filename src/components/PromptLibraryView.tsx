@@ -59,7 +59,7 @@ export const PromptLibraryView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
           Prompt Engineering Library
@@ -73,7 +73,7 @@ export const PromptLibraryView: React.FC = () => {
         {curatedPrompts.map((cp) => (
           <div
             key={cp.id}
-            className="p-5 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-3"
+            className="p-5 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-3"
           >
             <div>
               <div className="flex items-center justify-between mb-1">

@@ -22,6 +22,8 @@ import {
   INITIAL_NOTIFICATIONS,
   INITIAL_API_KEYS
 } from '../data/mockData';
+import { synthesizeGenuineVideo } from '../utils/videoSynthesizer';
+
 
 interface AppContextType {
   // Navigation & View
@@ -29,6 +31,9 @@ interface AppContextType {
   setActiveTab: (tab: NavTab) => void;
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (v: boolean) => void;
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (v: boolean) => void;
+  toggleMobileSidebar: () => void;
 
   // Accessibility & Theme
   isDarkMode: boolean;
@@ -46,6 +51,8 @@ interface AppContextType {
   // Studio Generator State
   currentPrompt: string;
   setCurrentPrompt: (prompt: string) => void;
+  selectedTemplate: VideoTemplate | null;
+  setSelectedTemplate: (tpl: VideoTemplate | null) => void;
   selectedFormat: VideoFormat;
   setSelectedFormat: (fmt: VideoFormat) => void;
   selectedModel: AIModel;
@@ -72,6 +79,8 @@ interface AppContextType {
   setIsUpgradeModalOpen: (v: boolean) => void;
   isPromptBuilderOpen: boolean;
   setIsPromptBuilderOpen: (v: boolean) => void;
+  isScratchpadOpen: boolean;
+  setIsScratchpadOpen: (v: boolean) => void;
   isSearchModalOpen: boolean;
   setIsSearchModalOpen: (v: boolean) => void;
   isBackupModalOpen: boolean;
@@ -84,7 +93,7 @@ interface AppContextType {
   // Generation & Projects
   isGenerating: boolean;
   generationProgress: number;
-  startVideoGeneration: () => Promise<void>;
+  startVideoGeneration: (referenceUrl?: string | null) => Promise<void>;
   projects: ProjectAsset[];
   deleteProject: (id: string) => void;
   addProject: (p: ProjectAsset) => void;
@@ -121,8 +130,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const [activeTab, setActiveTab] = useState<NavTab>('landing');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const toggleMobileSidebar = () => setIsMobileSidebarOpen(prev => !prev);
 
   // Theme & Accessibility
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -134,28 +145,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return (localStorage.getItem('everygen_text_scale') as any) || 'normal';
   });
 
-  // User Profile
+  // User Profile with +5,000 Credits Boost
   const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('everygen_user');
-    if (saved) {
-      try { return JSON.parse(saved); } catch {}
-    }
-    return {
+    const defaultUser: UserProfile = {
       id: 'usr_sikiblue',
       name: 'sikiblue',
       handle: '@sikiblue',
       email: 'eshaanbindroo@gmail.com',
       avatarBg: '#9333EA',
       plan: 'Creator Pro',
-      credits: 1420,
+      credits: 6420, // 1420 + 5000 bonus credits
       twoFactorEnabled: true,
       role: 'Owner'
     };
+    const saved = localStorage.getItem('everygen_user');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.credits !== 'number' || parsed.credits < 6000) {
+          parsed.credits = (parsed.credits || 1420) + 5000;
+          localStorage.setItem('everygen_user', JSON.stringify(parsed));
+        }
+        return parsed;
+      } catch {}
+    }
+    return defaultUser;
   });
 
   // Studio Generator
   const [currentPrompt, setCurrentPrompt] = useState('');
-  const [selectedFormat, setSelectedFormat] = useState<VideoFormat>(VIDEO_FORMATS[1]); // Disney
+  const [selectedTemplate, setSelectedTemplate] = useState<VideoTemplate | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<VideoFormat>(VIDEO_FORMATS[0]); // No format / Freeform prompt
   const [selectedModel, setSelectedModel] = useState<AIModel>(AI_MODELS[0]); // Kling 3.0
   const [duration, setDuration] = useState('10s');
   const [resolution, setResolution] = useState('1080p');
@@ -169,6 +189,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isPromptBuilderOpen, setIsPromptBuilderOpen] = useState(false);
+  const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [activePreviewProject, setActivePreviewProject] = useState<ProjectAsset | null>(null);
@@ -280,7 +301,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addCredits = (amount: number) => {
     setCurrentUser(prev => ({ ...prev, credits: prev.credits + amount }));
-    addNotification('Credits Added', `+${amount} Everygen credits successfully loaded into your balance.`, 'credit_alert');
+    addNotification('Credits Added', `+${amount} NovaGen credits successfully loaded into your balance.`, 'credit_alert');
   };
 
   const addProject = (p: ProjectAsset) => {
@@ -354,58 +375,183 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addNotification('API Key Revoked', 'API key was invalidated', 'system');
   };
 
-  // Video Generation Workflow
-  const startVideoGeneration = async () => {
+  // Video Generation Workflow with Template & Prompt Media Synthesis
+  const startVideoGeneration = async (referenceUrl?: string | null) => {
     const cost = selectedModel.creditsPerUnit || 21;
     if (!deductCredits(cost)) {
       return;
     }
 
     setIsGenerating(true);
-    setGenerationProgress(5);
+    setGenerationProgress(10);
 
     try {
-      // Call backend to log job
-      fetch('/api/generate/video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: currentPrompt || selectedFormat.promptExample,
-          model: selectedModel.name,
-          format: selectedFormat.name,
-          duration,
-          resolution,
-          settings: {
-            aspectRatio,
-            motionStrength,
-            cameraMovement
-          }
-        })
-      }).catch(() => {});
+      const finalPrompt = currentPrompt && currentPrompt.trim() 
+        ? currentPrompt.trim() 
+        : (selectedTemplate?.prompt || selectedFormat.promptExample);
 
-      // Simulate progressive render
-      for (let i = 10; i <= 100; i += 15) {
-        await new Promise(r => setTimeout(r, 650));
-        setGenerationProgress(i);
+      // Check if user provided their own custom prompt
+      const hasCustomPrompt = Boolean(currentPrompt && currentPrompt.trim().length > 0);
+
+
+
+      let generatedImageUrl: string = selectedTemplate?.imageUrl || selectedFormat.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1080&auto=format&fit=crop&q=80';
+      let generatedVideoUrl: string = '';
+      let synthTheme: string | undefined;
+      let synthColor: string | undefined;
+
+      // Call backend to log job and attempt real AI generation (Replicate / Fal / Runway)
+      try {
+        const resp = await fetch('/api/generate/video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: finalPrompt,
+            model: selectedModel.name,
+            format: selectedFormat.name,
+            duration,
+            resolution,
+            settings: {
+              aspectRatio,
+              motionStrength,
+              cameraMovement,
+              referenceUrl
+            }
+          })
+        });
+        const data = await resp.json();
+
+        if (!resp.ok || data.error) {
+          throw new Error(data.error || 'Failed to start video generation.');
+        }
+
+        // ONLY override with real third-party AI provider output (Replicate / Fal.ai / Runway)
+        const isCloudProvider = data.externalProvider === 'replicate' || data.externalProvider === 'fal' || data.externalProvider === 'runway' || data.externalProvider === 'kling';
+        if (isCloudProvider && data.job?.resultUrl && !data.job.resultUrl.startsWith('/videos/')) {
+          const resUrl = data.job.resultUrl.toLowerCase();
+          if (resUrl.endsWith('.mp4') || resUrl.endsWith('.webm') || resUrl.startsWith('data:video')) {
+            generatedVideoUrl = data.job.resultUrl;
+          } else {
+            throw new Error('Received an unsupported or non-video output from the provider.');
+          }
+        } else if (isCloudProvider && data.job?.status === 'completed') {
+           throw new Error('Provider did not return a valid video URL.');
+        }
+
+        // Simulate progressive render
+        for (let i = 25; i <= 100; i += 25) {
+          await new Promise(r => setTimeout(r, 300));
+          setGenerationProgress(i);
+        }
+
+        // If a real background job was launched with an external provider, poll until completed
+        if (data?.jobId && isCloudProvider && (!data.job?.resultUrl)) {
+          let isComplete = false;
+          let retries = 0;
+          while (!isComplete && retries < 60) {
+            await new Promise(r => setTimeout(r, 3000));
+            try {
+              const pollResp = await fetch(`/api/generate/status/${data.jobId}`);
+              const pollData = await pollResp.json();
+              if (pollData?.status === 'failed') {
+                throw new Error('External provider failed to generate video.');
+              }
+              if (pollData?.status === 'completed') {
+                isComplete = true;
+                if (pollData?.resultUrl && !pollData.resultUrl.includes('/mock_videos/') && !pollData.resultUrl.startsWith('/videos/')) {
+                  const resUrl = pollData.resultUrl.toLowerCase();
+                  if (resUrl.endsWith('.mp4') || resUrl.endsWith('.webm') || resUrl.startsWith('data:video')) {
+                    generatedVideoUrl = pollData.resultUrl;
+                  } else {
+                    throw new Error('Received an unsupported or non-video output from the provider.');
+                  }
+                } else {
+                  throw new Error('Provider did not return a valid video URL.');
+                }
+              } else {
+                setGenerationProgress(pollData?.progress || 50);
+              }
+            } catch (err) {
+              if (err instanceof Error && err.message.includes('failed')) throw err;
+            }
+            retries++;
+          }
+        }
+      } catch (err: any) {
+        console.warn('Backend generation sync:', err);
+        alert(err.message || 'Video generation failed. Please check your configuration.');
+        setIsGenerating(false);
+        setGenerationProgress(0);
+        addCredits(cost); // Refund credits on failure
+        return;
       }
 
-      // Add new project
+      // Helper to dynamically match visual theme to prompt keywords
+      const deriveVisualTheme = (promptText: string, formatId: string): string => {
+        const text = (promptText || '').toLowerCase();
+        if (text.includes('cyber') || text.includes('neon') || text.includes('tokyo') || text.includes('future') || text.includes('sci-fi') || text.includes('robot')) return 'cyberpunk';
+        if (text.includes('space') || text.includes('galaxy') || text.includes('nebula') || text.includes('cosmic') || text.includes('star') || text.includes('alien')) return 'space';
+        if (text.includes('nature') || text.includes('flower') || text.includes('mountain') || text.includes('forest') || text.includes('ocean') || text.includes('sunset') || text.includes('landscape')) return 'nature';
+        if (text.includes('anime') || text.includes('samurai') || text.includes('ninja') || text.includes('sword') || text.includes('dragon') || text.includes('sakuga')) return 'anime';
+        if (text.includes('court') || text.includes('judge') || text.includes('lawyer') || text.includes('verdict')) return 'court';
+        if (text.includes('hydraulic') || text.includes('press') || text.includes('crush') || text.includes('smash')) return 'hydraulic';
+        if (text.includes('cctv') || text.includes('security') || text.includes('surveillance') || text.includes('cam')) return 'cctv';
+        if (text.includes('doorbell') || text.includes('porch') || text.includes('ring')) return 'ring';
+        if (text.includes('disney') || text.includes('pixar') || text.includes('puppy') || text.includes('cartoon') || text.includes('cute')) return 'disney';
+        if (text.includes('car') || text.includes('race') || text.includes('gta') || text.includes('speed') || text.includes('drive')) return 'gta';
+
+        if (formatId === 'disney') return 'disney';
+        if (formatId === 'hydraulic-press') return 'hydraulic';
+        if (formatId === 'cctv') return 'cctv';
+        if (formatId === 'ring-doorbell') return 'ring';
+        if (formatId === 'anime') return 'anime';
+        if (formatId === 'gta-6') return 'gta';
+        if (formatId === 'nature-clips') return 'nature';
+        if (formatId === 'ai-court-videos') return 'court';
+
+        return 'cinematic-studio';
+      };
+
+      const deriveThemeColor = (thm: string): string => {
+        switch (thm) {
+          case 'cyberpunk': return '#8B5CF6';
+          case 'space': return '#3B82F6';
+          case 'nature': return '#10B981';
+          case 'anime': return '#F59E0B';
+          case 'court': return '#6366F1';
+          case 'hydraulic': return '#EC4899';
+          case 'cctv': return '#059669';
+          case 'ring': return '#D97706';
+          case 'disney': return '#06B6D4';
+          case 'gta': return '#F43F5E';
+          default: return '#0075FD';
+        }
+      };
+
+      const theme = synthTheme || selectedTemplate?.visualTheme || deriveVisualTheme(finalPrompt, selectedFormat.id);
+      const color = synthColor || selectedTemplate?.accentColor || deriveThemeColor(theme);
+
+      // Add new project with verified media URLs
       const newProj: ProjectAsset = {
         id: 'proj_' + Date.now(),
-        title: `${selectedFormat.name} - ${currentPrompt.slice(0, 30) || 'Viral Concept'}`,
+        title: currentPrompt.trim() 
+          ? (currentPrompt.length > 36 ? currentPrompt.slice(0, 36) + '...' : currentPrompt)
+          : (selectedTemplate?.title || `${selectedFormat.name} Concept`),
         type: 'video',
-        format: selectedFormat.name,
+        format: selectedTemplate?.format || selectedFormat.name,
         model: selectedModel.name,
-        duration,
+        duration: selectedTemplate?.duration || duration,
         resolution,
         aspectRatio,
         sizeBytes: 24500000,
         createdAt: Date.now(),
         status: 'ready',
-        prompt: currentPrompt || selectedFormat.promptExample,
-        tags: [selectedFormat.name, selectedModel.name, resolution],
-        thumbnailColor: selectedFormat.id === 'disney' ? '#10B981' : selectedFormat.id === 'hydraulic-press' ? '#EC4899' : '#0066FF',
-        visualTheme: selectedFormat.id === 'disney' ? 'disney' : selectedFormat.id === 'hydraulic-press' ? 'hydraulic' : selectedFormat.id === 'cctv' ? 'cctv' : selectedFormat.id === 'ring-doorbell' ? 'ring' : 'gta'
+        prompt: finalPrompt,
+        tags: [selectedTemplate?.format || selectedFormat.name, selectedModel.name, resolution],
+        thumbnailColor: color,
+        visualTheme: theme,
+        imageUrl: generatedImageUrl,
+        videoUrl: generatedVideoUrl
       };
 
       addProject(newProj);
@@ -430,7 +576,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Speech Recognition is not supported in this browser. Please use Google Chrome.');
+      addNotification('Voice Not Supported', 'Web Speech recognition requires Google Chrome or Chromium browser.', 'system');
       return;
     }
 
@@ -470,6 +616,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setIsPromptBuilderOpen(true);
           setLastVoiceAction('Opened Prompt Builder Drawer');
           speakFeedback('Opening Prompt Builder');
+        } else if (transcript.includes('scratchpad') || transcript.includes('notes') || transcript.includes('pad')) {
+          setIsScratchpadOpen(true);
+          setLastVoiceAction('Opened Creative Scratchpad');
+          speakFeedback('Opening Creative Scratchpad');
         } else if (transcript.includes('upgrade') || transcript.includes('credits') || transcript.includes('billing')) {
           setIsUpgradeModalOpen(true);
           setLastVoiceAction('Opened Upgrade Modal');
@@ -527,6 +677,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab,
         isSidebarCollapsed,
         setIsSidebarCollapsed,
+        isMobileSidebarOpen,
+        setIsMobileSidebarOpen,
+        toggleMobileSidebar,
         isDarkMode,
         toggleDarkMode,
         textScale,
@@ -538,6 +691,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addCredits,
         currentPrompt,
         setCurrentPrompt,
+        selectedTemplate,
+        setSelectedTemplate,
         selectedFormat,
         setSelectedFormat,
         selectedModel,
@@ -562,6 +717,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsUpgradeModalOpen,
         isPromptBuilderOpen,
         setIsPromptBuilderOpen,
+        isScratchpadOpen,
+        setIsScratchpadOpen,
         isSearchModalOpen,
         setIsSearchModalOpen,
         isBackupModalOpen,

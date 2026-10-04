@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 
 export const EncryptedBackupModal: React.FC = () => {
   const { projects, addNotification, currentUser } = useApp();
-  const [encryptionKey, setEncryptionKey] = useState('everygen_secure_vault_2026');
+  const [encryptionKey, setEncryptionKey] = useState('novagen_secure_vault_2026');
   const [isExporting, setIsExporting] = useState(false);
   const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
 
@@ -12,7 +12,7 @@ export const EncryptedBackupModal: React.FC = () => {
     setIsExporting(true);
     setTimeout(() => {
       const payload = {
-        app: 'Everygen Studio',
+        app: 'NovaGen Studio',
         version: '3.4.0',
         exportedAt: new Date().toISOString(),
         user: currentUser.name,
@@ -24,7 +24,7 @@ export const EncryptedBackupModal: React.FC = () => {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `everygen_vault_backup_${Date.now()}.everygen`);
+      downloadAnchor.setAttribute("download", `novagen_vault_backup_${Date.now()}.novagen`);
       downloadAnchor.click();
       setIsExporting(false);
       addNotification('Encrypted Backup Created', 'All project states encrypted and saved to disk.', 'system');
@@ -43,7 +43,7 @@ export const EncryptedBackupModal: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
           Encrypted Backups & Storage
@@ -55,14 +55,14 @@ export const EncryptedBackupModal: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Export Backup Card */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
               <HardDriveDownload className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-                Create Encrypted Backup (.everygen)
+                Create Encrypted Backup (.novagen)
               </h3>
               <p className="text-xs text-neutral-500">
                 AES-256 encrypted archive containing all project timelines and prompts.
@@ -107,7 +107,7 @@ export const EncryptedBackupModal: React.FC = () => {
         </div>
 
         {/* Restore Backup Card */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
               <HardDriveUpload className="w-5 h-5" />
@@ -126,14 +126,14 @@ export const EncryptedBackupModal: React.FC = () => {
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-purple-500 rounded-2xl p-6 cursor-pointer bg-neutral-50/50 dark:bg-neutral-900/40 transition-colors">
               <FileCode className="w-8 h-8 text-neutral-400 mb-2" />
               <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                Click to browse .everygen file
+                Click to browse .novagen file
               </span>
               <span className="text-[10px] text-neutral-400 mt-0.5">
                 Integrity will be verified against SHA-256 checksum
               </span>
               <input
                 type="file"
-                accept=".everygen,.json"
+                accept=".novagen,.json"
                 onChange={handleSimulateRestore}
                 className="hidden"
               />
@@ -149,7 +149,7 @@ export const EncryptedBackupModal: React.FC = () => {
       </div>
 
       {/* Storage Breakdown Meter */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
             Storage Quota & Scalability (16.7 GB of 100 GB Used)

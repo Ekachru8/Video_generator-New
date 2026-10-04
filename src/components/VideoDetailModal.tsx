@@ -4,10 +4,20 @@ import { useApp } from '../context/AppContext';
 import { VideoVisualPlayer } from './VideoVisualPlayer';
 
 export const VideoDetailModal: React.FC = () => {
-  const { activePreviewProject, setActivePreviewProject, toggleOfflineCache } = useApp();
+  const { activePreviewProject, setActivePreviewProject, toggleOfflineCache, addNotification } = useApp();
   const [exportFormat, setExportFormat] = useState<'mp4' | 'gif' | 'webm' | 'srt'>('mp4');
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActivePreviewProject(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setActivePreviewProject]);
 
   if (!activePreviewProject) return null;
 
@@ -17,26 +27,103 @@ export const VideoDetailModal: React.FC = () => {
     setTimeout(() => setCopiedPrompt(false), 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     setIsExporting(true);
-    setTimeout(() => {
-      let content = `Everygen Studio Export: ${activePreviewProject.title}\nFormat: ${activePreviewProject.format}\nModel: ${activePreviewProject.model}\nPrompt: ${activePreviewProject.prompt}`;
+    const cleanTitle = (activePreviewProject.title || 'novagen_render').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `${cleanTitle}_${activePreviewProject.id}.${exportFormat}`;
+
+    try {
       if (exportFormat === 'srt') {
-        content = `1\n00:00:00,000 --> 00:00:03,500\n${activePreviewProject.title}\n\n2\n00:00:03,500 --> 00:00:08,000\n${activePreviewProject.prompt}`;
+        const srtContent = `1\n00:00:00,000 --> 00:00:02,800\n${activePreviewProject.title}\n\n2\n00:00:02,800 --> 00:00:07,500\n${activePreviewProject.prompt}\n\n3\n00:00:07,500 --> 00:00:10,000\nRendered with NovaGen Studio (${activePreviewProject.model})\n`;
+        const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        addNotification('Subtitles Downloaded', `Exported ${filename}`, 'system');
+        setIsExporting(false);
+        return;
       }
+
+      const mediaUrl = activePreviewProject.videoUrl || activePreviewProject.imageUrl;
+
+      if (mediaUrl) {
+        if (mediaUrl.startsWith('data:') || mediaUrl.startsWith('blob:')) {
+          const a = document.createElement('a');
+          a.href = mediaUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          addNotification('Export Complete', `Downloaded ${filename}`, 'render_complete');
+          setIsExporting(false);
+          return;
+        }
+
+        // Remote URL - attempt to fetch blob so user gets actual download prompt
+        try {
+          const res = await fetch(mediaUrl, { mode: 'cors' });
+          if (res.ok) {
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            addNotification('Export Complete', `Downloaded ${filename}`, 'render_complete');
+            setIsExporting(false);
+            return;
+          }
+        } catch {
+          // If CORS prevents fetch, trigger standard anchor download
+          const a = document.createElement('a');
+          a.href = mediaUrl;
+          a.target = '_blank';
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          addNotification('Media Opened for Download', `Saving ${filename}`, 'render_complete');
+          setIsExporting(false);
+          return;
+        }
+      }
+
+      // If no media url exists (e.g. script only)
+      const content = `NovaGen Studio Export\nTitle: ${activePreviewProject.title}\nModel: ${activePreviewProject.model}\nResolution: ${activePreviewProject.resolution}\nPrompt:\n${activePreviewProject.prompt}\n`;
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${activePreviewProject.id}.${exportFormat}`;
+      a.download = `${cleanTitle}.txt`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addNotification('Details Exported', 'Project metadata exported', 'system');
+    } catch (err) {
+      console.error('Download error:', err);
+    } finally {
       setIsExporting(false);
-    }, 600);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in select-none">
-      <div className="bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+    <div 
+      onClick={() => setActivePreviewProject(null)}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto cursor-default"
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
           <div className="truncate pr-4">
@@ -54,7 +141,8 @@ export const VideoDetailModal: React.FC = () => {
 
           <button
             onClick={() => setActivePreviewProject(null)}
-            className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -66,10 +154,13 @@ export const VideoDetailModal: React.FC = () => {
           <div className="flex flex-col items-center justify-center">
             <div className="w-full max-w-[280px]">
               <VideoVisualPlayer
-                theme={activePreviewProject.visualTheme || 'car'}
+                theme={activePreviewProject.visualTheme || 'cinematic-studio'}
                 title={activePreviewProject.title}
+                prompt={activePreviewProject.prompt}
                 duration={activePreviewProject.duration || '10s'}
                 aspectRatio={activePreviewProject.aspectRatio}
+                imageUrl={activePreviewProject.imageUrl}
+                videoUrl={activePreviewProject.videoUrl}
               />
             </div>
           </div>

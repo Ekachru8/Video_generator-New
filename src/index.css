@@ -1,14 +1,137 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --brand: #0075FD;
+    --brand-rgb: 0, 117, 253;
+    --glow-brand-cast: 117, 165, 255;
+    --page-base: #f8f9fc;
+    --surface: #ffffff;
+    --surface-subtle: #f3f5fa;
+    --border-subtle: rgba(0, 0, 0, 0.07);
+    --border-strong: rgba(0, 0, 0, 0.14);
+  }
+
+  :root.dark,
+  .dark {
+    --page-base: #000000;
+    --surface: #000000;
+    --surface-subtle: #050508;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
   }
 
   body {
     font-family: var(--font-sans);
+    background-color: var(--page-base);
+    letter-spacing: -0.015em;
   }
+
+  /* Pitch-black dark mode base styling */
+  html.dark,
+  html.dark body,
+  body.dark {
+    background-color: #000000;
+    color: #f3f4f6;
+  }
+}
+
+/* NovaGen Brand Button & Glow Utilities */
+.novagen-btn-primary,
+.everygen-btn-primary {
+  background: linear-gradient(180deg, #63ADFF 0%, #0F86FF 38%, #0075FD 74%, #0069E8 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.55), inset 0 -2px 6px 0 rgba(0, 58, 133, 0.42), 0 2px 8px 0 rgba(0, 117, 253, 0.35);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.novagen-btn-primary:hover,
+.everygen-btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.65), inset 0 -2px 6px 0 rgba(0, 58, 133, 0.5), 0 4px 16px 0 rgba(0, 117, 253, 0.45);
+}
+
+.novagen-btn-primary:active,
+.everygen-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.novagen-btn-pill,
+.everygen-btn-pill {
+  background: linear-gradient(180deg, #2E90FF 0%, #0075FD 52%, #0060DC 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), inset 0 -2px 6px 0 rgba(0, 58, 133, 0.45);
+}
+
+.novagen-card,
+.everygen-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 1px 3px rgba(16, 24, 40, 0.05);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dark .novagen-card,
+.dark .everygen-card {
+  background: #080a12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.novagen-card:hover,
+.everygen-card:hover {
+  border-color: rgba(0, 117, 253, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 8px 24px -8px rgba(0, 117, 253, 0.18);
+  transform: translateY(-2px);
+}
+
+.dark .novagen-card:hover,
+.dark .everygen-card:hover {
+  border-color: rgba(0, 117, 253, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 24px -8px rgba(0, 117, 253, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Hero Background Glow */
+.testhero-hero-gradient {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(99, 173, 255, 0.18) 0%, rgba(0, 117, 253, 0.06) 45%, transparent 75%),
+    radial-gradient(45% 30% at 10% 20%, rgba(200, 230, 255, 0.4) 0%, transparent 60%),
+    radial-gradient(45% 30% at 90% 20%, rgba(200, 230, 255, 0.4) 0%, transparent 60%);
+}
+
+.dark .testhero-hero-gradient {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(0, 117, 253, 0.25) 0%, rgba(7, 22, 61, 0.4) 45%, transparent 75%),
+    radial-gradient(45% 30% at 10% 20%, rgba(15, 30, 75, 0.4) 0%, transparent 60%),
+    radial-gradient(45% 30% at 90% 20%, rgba(15, 30, 75, 0.4) 0%, transparent 60%);
+}
+
+/* Fanning MCP card animation */
+.vm-mcp-fan-left {
+  transform: translate3d(-52px, 0, 0) scale(0.85);
+  transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .vm-mcp-fan-left {
+  transform: translate3d(-72px, 0, 0) scale(0.92) rotate(-8deg);
+}
+
+.vm-mcp-fan-right {
+  transform: translate3d(52px, 0, 0) scale(0.85);
+  transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1) 40ms;
+}
+.group:hover .vm-mcp-fan-right {
+  transform: translate3d(72px, 0, 0) scale(0.92) rotate(8deg);
+}
+
+.vm-mcp-fan-center {
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .vm-mcp-fan-center {
+  transform: translate3d(0, -6px, 0) scale(1.04);
 }
 
 /* Custom scrollbars for clean studio feel */
@@ -22,12 +145,102 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.25);
+  background: rgba(150, 150, 150, 0.22);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(150, 150, 150, 0.45);
+  background: rgba(150, 150, 150, 0.4);
+}
+
+/* 3D Perspective Grid */
+.bg-3d-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 117, 253, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 117, 253, 0.12) 1px, transparent 1px);
+}
+
+.dark .bg-3d-grid {
+  background-image: 
+    linear-gradient(to right, rgba(99, 173, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 173, 255, 0.12) 1px, transparent 1px);
+}
+
+/* 3D Keyframe Animations */
+@keyframes deckFloat {
+  0%, 100% {
+    transform: rotateX(8deg) translateY(0px) translateZ(0px);
+  }
+  50% {
+    transform: rotateX(10deg) translateY(-8px) translateZ(12px);
+  }
+}
+
+.animate-deck-float {
+  animation: deckFloat 5s ease-in-out infinite;
+}
+
+@keyframes auroraSlow {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+.animate-aurora-slow {
+  animation: auroraSlow 12s ease-in-out infinite;
+}
+
+@keyframes auroraDelayed {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-35px, 25px) scale(1.12);
+    opacity: 0.85;
+  }
+}
+
+.animate-aurora-delayed {
+  animation: auroraDelayed 15s ease-in-out 2s infinite;
+}
+
+@keyframes auroraReverse {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(25px, 20px) scale(0.92);
+  }
+}
+
+.animate-aurora-reverse {
+  animation: auroraReverse 18s ease-in-out 4s infinite;
+}
+
+/* 3D Shimmer Border & Glare */
+.sheen-3d-border {
+  position: relative;
+}
+
+.sheen-3d-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.05), rgba(0, 117, 253, 0.3));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /* Text scale utility states for accessibility */
@@ -36,10 +249,9 @@
 }
 
 .text-scale-large {
-  font-size: 112%;
+  font-size: 110%;
 }
 
 .text-scale-xlarge {
-  font-size: 125%;
+  font-size: 120%;
 }
-

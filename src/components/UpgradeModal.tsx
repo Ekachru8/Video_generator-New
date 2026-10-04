@@ -14,6 +14,17 @@ export const UpgradeModal: React.FC = () => {
   const [cardExp, setCardExp] = useState('12/28');
   const [cardCvc, setCardCvc] = useState('888');
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsUpgradeModalOpen(false);
+        setSuccessTx(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setIsUpgradeModalOpen]);
+
   if (!isUpgradeModalOpen) return null;
 
   const plans = [
@@ -110,8 +121,17 @@ export const UpgradeModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150 select-none overflow-y-auto">
-      <div className="bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+    <div 
+      onClick={() => {
+        setIsUpgradeModalOpen(false);
+        setSuccessTx(null);
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150 overflow-y-auto cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto cursor-default"
+      >
         {/* Header */}
         <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
           <div>
@@ -122,7 +142,7 @@ export const UpgradeModal: React.FC = () => {
               <span className="text-xs text-neutral-400">Current balance: {currentUser.credits} credits</span>
             </div>
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-neutral-100 mt-1">
-              Upgrade Everygen Studio Plan
+              Upgrade NovaGen Studio Plan
             </h3>
           </div>
 
@@ -131,7 +151,8 @@ export const UpgradeModal: React.FC = () => {
               setIsUpgradeModalOpen(false);
               setSuccessTx(null);
             }}
-            className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -147,7 +168,7 @@ export const UpgradeModal: React.FC = () => {
               Payment Successful!
             </h4>
             <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-md mx-auto">
-              Your account has been upgraded to <strong>{currentPlanObj.name}</strong>. We credited <strong>+{currentPlanObj.credits.toLocaleString()} Everygen credits</strong> to your balance.
+              Your account has been upgraded to <strong>{currentPlanObj.name}</strong>. We credited <strong>+{currentPlanObj.credits.toLocaleString()} NovaGen credits</strong> to your balance.
             </p>
             <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-mono text-neutral-500 max-w-sm mx-auto">
               Receipt ID: {successTx} · Status: Settled
@@ -202,14 +223,14 @@ export const UpgradeModal: React.FC = () => {
                   <div
                     key={p.id}
                     onClick={() => setSelectedPlan(p.id as any)}
-                    className={`rounded-2xl border p-4 cursor-pointer flex flex-col justify-between transition-all duration-200 relative ${
+                    className={`rounded-2xl border p-4 ${p.popular ? 'pt-6 border-blue-500/80 shadow-md' : ''} cursor-pointer flex flex-col justify-between transition-all duration-200 relative ${
                       isSelected
                         ? 'border-blue-600 dark:border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 ring-2 ring-blue-500/20'
                         : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/30 dark:bg-neutral-900/30'
                     }`}
                   >
                     {p.popular && (
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm z-10">
                         Most Popular
                       </span>
                     )}

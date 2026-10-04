@@ -6,3 +6,14 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Test artifacts, screenshots & temporary files
+*.png
+*.jpg
+*.jpeg
+*.webm
+*.novagen
+.playwright-mcp/
+scratch/
+.tempmediaStorage/
+

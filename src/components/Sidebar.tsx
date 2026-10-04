@@ -19,7 +19,10 @@ import {
   Key,
   ShieldCheck,
   HardDriveDownload,
-  Share2
+  Share2,
+  Sun,
+  Moon,
+  X
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { NavTab } from '../types';
@@ -30,10 +33,14 @@ export const Sidebar: React.FC = () => {
     setActiveTab,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
+    isMobileSidebarOpen,
+    setIsMobileSidebarOpen,
     setIsSearchModalOpen,
     currentUser,
     switchRole,
-    setIsUpgradeModalOpen
+    setIsUpgradeModalOpen,
+    isDarkMode,
+    toggleDarkMode
   } = useApp();
 
   const [activeFlyout, setActiveFlyout] = useState<'video' | 'image' | 'audio' | null>(null);
@@ -51,51 +58,80 @@ export const Sidebar: React.FC = () => {
     }, 250);
   };
 
+  const handleNav = (tab: NavTab) => {
+    setActiveTab(tab);
+    setIsMobileSidebarOpen(false);
+    setActiveFlyout(null);
+  };
+
   return (
-    <aside 
-      className={`relative z-30 shrink-0 h-full border-r border-neutral-200 dark:border-neutral-800 bg-[#fdfdfd] dark:bg-[#0e0f15] flex flex-col justify-between transition-all duration-200 select-none ${
-        isSidebarCollapsed ? 'w-16' : 'w-64'
-      }`}
-    >
-      {/* Top Header & Logo */}
-      <div className="flex flex-col">
-        <div className="h-14 px-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800/60">
-          {!isSidebarCollapsed && (
-            <div 
-              onClick={() => setActiveTab('home')}
-              className="flex items-center gap-2 cursor-pointer group"
-            >
-              <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {isMobileSidebarOpen && (
+        <div
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-xs md:hidden animate-in fade-in duration-200 cursor-pointer"
+        />
+      )}
+
+      <aside 
+        className={`fixed md:relative inset-y-0 left-0 z-50 md:z-30 shrink-0 h-full border-r border-neutral-200 dark:border-neutral-800/80 bg-[#fdfdfd] dark:bg-[#040508] flex flex-col justify-between transition-all duration-300 select-none ${
+          isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'
+        } ${
+          isSidebarCollapsed ? 'md:w-16 w-72' : 'w-72 md:w-64'
+        }`}
+      >
+        {/* Top Header & Logo */}
+        <div className="flex flex-col">
+          <div className="h-14 px-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800/60">
+            {(!isSidebarCollapsed || isMobileSidebarOpen) && (
+              <div 
+                onClick={() => handleNav('home')}
+                className="flex items-center gap-2 cursor-pointer group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+                  <Video className="w-4 h-4 fill-white" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-neutral-900 dark:text-neutral-100 text-sm tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
+                    NovaGen
+                  </span>
+                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    Studio
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {isSidebarCollapsed && !isMobileSidebarOpen && (
+              <div 
+                onClick={() => handleNav('home')}
+                className="w-8 h-8 mx-auto rounded-lg bg-blue-600 flex items-center justify-center text-white cursor-pointer shadow-sm"
+              >
                 <Video className="w-4 h-4 fill-white" />
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-neutral-900 dark:text-neutral-100 text-sm tracking-tight">
-                  Everygen
-                </span>
-                <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
-                  Studio
-                </span>
-              </div>
-            </div>
-          )}
+            )}
 
-          {isSidebarCollapsed && (
-            <div 
-              onClick={() => setActiveTab('home')}
-              className="w-8 h-8 mx-auto rounded-lg bg-blue-600 flex items-center justify-center text-white cursor-pointer shadow-sm"
-            >
-              <Video className="w-4 h-4 fill-white" />
-            </div>
-          )}
+            <div className="flex items-center gap-1">
+              {/* Desktop Collapse / Expand Button */}
+              <button
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                className="hidden md:block p-1 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+              </button>
 
-          <button
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        </div>
+              {/* Mobile Close Button */}
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="md:hidden p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
 
         {/* Global Search Bar */}
         <div className="px-3 pt-3">
@@ -121,7 +157,7 @@ export const Sidebar: React.FC = () => {
         <nav className="px-2 pt-3 space-y-0.5">
           {/* Home */}
           <button
-            onClick={() => setActiveTab('home')}
+            onClick={() => handleNav('home')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
               activeTab === 'home'
                 ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold shadow-xs'
@@ -129,7 +165,7 @@ export const Sidebar: React.FC = () => {
             } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
           >
             <Home className="w-4 h-4" />
-            {!isSidebarCollapsed && <span>Home</span>}
+            {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Home</span>}
           </button>
 
           {/* Video (With Flyout) */}
@@ -139,7 +175,7 @@ export const Sidebar: React.FC = () => {
             onMouseLeave={handleMouseLeaveFlyout}
           >
             <button
-              onClick={() => setActiveTab('shorts-studio')}
+              onClick={() => handleNav('shorts-studio')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'shorts-studio' || activeTab === 'video-generator'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold shadow-xs'
@@ -148,14 +184,14 @@ export const Sidebar: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <Video className="w-4 h-4" />
-                {!isSidebarCollapsed && <span>Video</span>}
+                {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Video</span>}
               </div>
-              {!isSidebarCollapsed && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
             </button>
 
             {/* Video Flyout Mega Menu (Screenshot 7 replica) */}
             {activeFlyout === 'video' && (
-              <div className="absolute left-full top-0 ml-1.5 w-[520px] bg-white dark:bg-[#161720] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 grid grid-cols-2 gap-4 z-50 animate-in fade-in duration-100">
+              <div className="absolute left-full top-0 ml-1.5 w-[520px] bg-white dark:bg-[#0a0b14] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 grid grid-cols-2 gap-4 z-50 animate-in fade-in duration-100">
                 {/* Column 1: Features */}
                 <div>
                   <h4 className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-2 px-2">
@@ -257,22 +293,22 @@ export const Sidebar: React.FC = () => {
             onMouseLeave={handleMouseLeaveFlyout}
           >
             <button
-              onClick={() => setActiveTab('image-generator')}
+              onClick={() => handleNav('image-generator')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'image-generator'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold shadow-xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <ImageIcon className="w-4 h-4" />
-                {!isSidebarCollapsed && <span>Image</span>}
+                {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Image</span>}
               </div>
-              {!isSidebarCollapsed && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
             </button>
 
             {activeFlyout === 'image' && (
-              <div className="absolute left-full top-0 ml-1.5 w-[420px] bg-white dark:bg-[#161720] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 grid grid-cols-2 gap-3 z-50 animate-in fade-in duration-100">
+              <div className="absolute left-full top-0 ml-1.5 w-[420px] bg-white dark:bg-[#0a0b14] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 grid grid-cols-2 gap-3 z-50 animate-in fade-in duration-100">
                 <div>
                   <h4 className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-2">
                     Features
@@ -303,22 +339,22 @@ export const Sidebar: React.FC = () => {
             onMouseLeave={handleMouseLeaveFlyout}
           >
             <button
-              onClick={() => setActiveTab('audio-studio')}
+              onClick={() => handleNav('audio-studio')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'audio-studio'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold shadow-xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <Mic className="w-4 h-4" />
-                {!isSidebarCollapsed && <span>Audio</span>}
+                {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Audio</span>}
               </div>
-              {!isSidebarCollapsed && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
             </button>
 
             {activeFlyout === 'audio' && (
-              <div className="absolute left-full top-0 ml-1.5 w-[380px] bg-white dark:bg-[#161720] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in duration-100">
+              <div className="absolute left-full top-0 ml-1.5 w-[380px] bg-white dark:bg-[#0a0b14] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in duration-100">
                 <div className="space-y-2">
                   <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/20">
                     <div className="text-xs font-bold text-purple-600">ElevenLabs v3 Natural Voiceover</div>
@@ -335,34 +371,34 @@ export const Sidebar: React.FC = () => {
 
           {/* Supercomputer */}
           <button
-            onClick={() => setActiveTab('supercomputer')}
+            onClick={() => handleNav('supercomputer')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
               activeTab === 'supercomputer'
                 ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold shadow-xs'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-            } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+            } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
           >
             <Cpu className="w-4 h-4" />
-            {!isSidebarCollapsed && <span>Supercomputer</span>}
+            {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Supercomputer</span>}
           </button>
 
           {/* MCP */}
           <button
-            onClick={() => setActiveTab('mcp')}
+            onClick={() => handleNav('mcp')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
               activeTab === 'mcp'
                 ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold shadow-xs'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-            } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+            } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
           >
             <Terminal className="w-4 h-4" />
-            {!isSidebarCollapsed && <span>MCP</span>}
+            {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>MCP</span>}
           </button>
         </nav>
 
         {/* Section: Library */}
         <div className="px-2 pt-4">
-          {!isSidebarCollapsed && (
+          {(!isSidebarCollapsed || isMobileSidebarOpen) && (
             <div className="px-3 pb-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 tracking-wide">
               Library
             </div>
@@ -370,44 +406,44 @@ export const Sidebar: React.FC = () => {
 
           <div className="space-y-0.5">
             <button
-              onClick={() => setActiveTab('shorts-studio')}
+              onClick={() => handleNav('shorts-studio')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-all ${
-                isSidebarCollapsed ? 'justify-center px-0' : ''
+                isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''
               }`}
             >
               <Zap className="w-4 h-4 text-amber-500" />
-              {!isSidebarCollapsed && <span>Viral Presets</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Viral Presets</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('prompt-library')}
+              onClick={() => handleNav('prompt-library')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'prompt-library'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <BookOpen className="w-4 h-4 text-pink-500" />
-              {!isSidebarCollapsed && <span>Prompt Library</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Prompt Library</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('my-projects')}
+              onClick={() => handleNav('my-projects')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'my-projects'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <FolderKanban className="w-4 h-4 text-blue-500" />
-              {!isSidebarCollapsed && <span>My projects</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>My projects</span>}
             </button>
           </div>
         </div>
 
         {/* Section: Workflow & Tools */}
         <div className="px-2 pt-4">
-          {!isSidebarCollapsed && (
+          {(!isSidebarCollapsed || isMobileSidebarOpen) && (
             <div className="px-3 pb-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 tracking-wide">
               Workflow
             </div>
@@ -415,70 +451,96 @@ export const Sidebar: React.FC = () => {
 
           <div className="space-y-0.5">
             <button
-              onClick={() => setActiveTab('calendar')}
+              onClick={() => handleNav('calendar')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'calendar'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <Calendar className="w-4 h-4 text-indigo-500" />
-              {!isSidebarCollapsed && <span>Content Calendar</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Content Calendar</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('collaboration')}
+              onClick={() => handleNav('collaboration')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'collaboration'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <Users className="w-4 h-4 text-emerald-500" />
-              {!isSidebarCollapsed && <span>Live Collaboration</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Live Collaboration</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('team-roles')}
+              onClick={() => handleNav('team-roles')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'team-roles'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <ShieldCheck className="w-4 h-4 text-teal-500" />
-              {!isSidebarCollapsed && <span>Roles & 2FA</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Roles & 2FA</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('api-keys')}
+              onClick={() => handleNav('api-keys')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'api-keys'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <Key className="w-4 h-4 text-amber-500" />
-              {!isSidebarCollapsed && <span>API & Webhooks</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>API & Webhooks</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('backup-restore')}
+              onClick={() => handleNav('backup-restore')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium ${
                 activeTab === 'backup-restore'
                   ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-900 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : ''}`}
+              } ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center px-0' : ''}`}
             >
               <HardDriveDownload className="w-4 h-4 text-violet-500" />
-              {!isSidebarCollapsed && <span>Encrypted Backup</span>}
+              {(!isSidebarCollapsed || isMobileSidebarOpen) && <span>Encrypted Backup</span>}
             </button>
           </div>
         </div>
       </div>
 
       {/* Bottom User Profile Section */}
-      <div className="p-3 border-t border-neutral-100 dark:border-neutral-800/80">
+      <div className="p-3 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5">
+        {/* Quick Theme Switcher Button */}
+        <button
+          onClick={toggleDarkMode}
+          className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700/60 transition-all cursor-pointer ${
+            isSidebarCollapsed ? 'justify-center px-0' : 'justify-between'
+          }`}
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          <div className="flex items-center gap-2.5">
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400 fill-amber-400/30" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-500 fill-indigo-500/20" />
+            )}
+            {!isSidebarCollapsed && (
+              <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+            )}
+          </div>
+          {!isSidebarCollapsed && (
+            <span className="text-[10px] font-mono uppercase font-semibold text-neutral-400">
+              {isDarkMode ? 'Light' : 'Dark'}
+            </span>
+          )}
+        </button>
+
         <div className="relative">
           <button
             onClick={() => setShowUserDropdown(!showUserDropdown)}
@@ -510,7 +572,7 @@ export const Sidebar: React.FC = () => {
 
           {/* User Popover Dropdown */}
           {showUserDropdown && (
-            <div className="absolute bottom-full left-0 mb-2 w-56 bg-white dark:bg-[#161720] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-3 z-50 animate-in fade-in duration-100">
+            <div className="absolute bottom-full left-0 mb-2 w-56 bg-white dark:bg-[#0a0b14] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-3 z-50 animate-in fade-in duration-100">
               <div className="pb-2 mb-2 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
                   {currentUser.name}
@@ -557,5 +619,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };

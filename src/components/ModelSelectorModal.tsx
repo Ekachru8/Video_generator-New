@@ -15,6 +15,16 @@ export const ModelSelectorModal: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsModelModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setIsModelModalOpen]);
+
   if (!isModelModalOpen) return null;
 
   const filteredModels = AI_MODELS.filter(m => 
@@ -29,8 +39,14 @@ export const ModelSelectorModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150 select-none">
-      <div className="bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+    <div 
+      onClick={() => setIsModelModalOpen(false)}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150 cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden cursor-default"
+      >
         {/* Search Header (Screenshot 5 replica) */}
         <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3">
           <div className="relative flex-1">
@@ -73,12 +89,12 @@ export const ModelSelectorModal: React.FC = () => {
                         : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/60'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 truncate">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
                       <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-blue-600 shrink-0">
                         {m.name.charAt(0)}
                       </div>
-                      <div className="truncate">
-                        <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 transition-colors">
+                      <div className="min-w-0 flex-1 truncate">
+                        <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 transition-colors truncate">
                           {m.name}
                         </div>
                         <div className="text-[10px] text-neutral-400 truncate">

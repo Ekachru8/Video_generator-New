@@ -49,13 +49,13 @@ export const CollaborationRoom: React.FC = () => {
   };
 
   const handleCopyShareLink = () => {
-    navigator.clipboard.writeText(`https://everygen.ai/collab/room_evg_${activeProject.id}`);
+    navigator.clipboard.writeText(`https://novagen.ai/collab/room_nvg_${activeProject.id}`);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -105,11 +105,12 @@ export const CollaborationRoom: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Synchronized Video Player & Marker Scrubber */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="p-4 rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-md flex flex-col items-center">
+          <div className="p-4 rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-md flex flex-col items-center">
             <div className="w-full max-w-sm">
               <VideoVisualPlayer
-                theme={activeProject.visualTheme || 'car'}
+                theme={activeProject.visualTheme || 'cinematic-studio'}
                 title={activeProject.title}
+                prompt={activeProject.prompt}
                 duration={activeProject.duration || '8s'}
                 aspectRatio="9:16"
               />
@@ -148,7 +149,7 @@ export const CollaborationRoom: React.FC = () => {
 
         {/* Right 1 Col: Collaboration Sidebar with Tabs */}
         <div className="space-y-4">
-          <div className="rounded-3xl bg-white dark:bg-[#14151e] border border-neutral-200 dark:border-neutral-800 shadow-md p-4 flex flex-col h-[520px]">
+          <div className="rounded-3xl bg-white dark:bg-[#080a12] border border-neutral-200 dark:border-neutral-800 shadow-md p-4 flex flex-col h-[520px]">
             {/* Tab Switcher */}
             <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl mb-4 text-xs font-semibold">
               <button
